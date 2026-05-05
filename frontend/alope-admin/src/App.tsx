@@ -1,11 +1,26 @@
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import Dashboard from "./pages/dashboard/Dashboard";
+import DashboardLayouts from "./layouts/DashboardLayouts";
+
 function App() {
   return (
     <>
-      <div className="min-h-screen bg-slate-100 flex items-center justify-center">
-        <h1 className="text-5xl font-extrabold text-blue-600 drop-shadow-md">
-          Lets Build Something Awesome
-        </h1>
-      </div>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route element={<DashboardLayouts />}>
+            <Route path="/dashboard" element={<Dashboard />} />
+          </Route>
+          <Route
+            path="*"
+            element={
+              <div className="flex h-screen items-center justify-center text-2xl font-bold text-gray-500">
+                404 - Halaman Tidak Ditemukan
+              </div>
+            }
+          />
+        </Routes>
+      </BrowserRouter>
     </>
   );
 }
