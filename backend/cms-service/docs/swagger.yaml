@@ -1,0 +1,664 @@
+basePath: /api/cms
+definitions:
+  models.Category:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      slug:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.Course:
+    properties:
+      category:
+        $ref: '#/definitions/models.Category'
+      cover:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      slug:
+        type: string
+      status:
+        type: string
+      title:
+        type: string
+      updated_at:
+        type: string
+      visibilty:
+        type: string
+    type: object
+  models.CourseErrorResponse:
+    properties:
+      code:
+        type: string
+      data:
+        type: string
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  models.CourseListResponse:
+    properties:
+      code:
+        type: string
+      data:
+        items:
+          $ref: '#/definitions/models.Course'
+        type: array
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  models.CourseResponse:
+    properties:
+      code:
+        type: string
+      data:
+        $ref: '#/definitions/models.Course'
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  models.CreateCourseRequest:
+    properties:
+      category_id:
+        type: integer
+      cover:
+        type: string
+      description:
+        type: string
+      slug:
+        type: string
+      status:
+        type: string
+      title:
+        type: string
+      visibility:
+        type: string
+    required:
+    - category_id
+    - slug
+    - title
+    type: object
+  models.CreateModuleRequest:
+    properties:
+      body:
+        type: string
+      course_id:
+        type: integer
+      cover:
+        type: string
+      description:
+        type: string
+      slug:
+        type: string
+      title:
+        type: string
+    required:
+    - course_id
+    - slug
+    - title
+    type: object
+  models.Module:
+    properties:
+      body:
+        type: string
+      course:
+        $ref: '#/definitions/models.Course'
+      course_id:
+        type: integer
+      cover:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      slug:
+        type: string
+      title:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.ModuleErrorResponse:
+    properties:
+      code:
+        type: string
+      data:
+        type: string
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  models.ModuleListResponse:
+    properties:
+      code:
+        type: string
+      data:
+        items:
+          $ref: '#/definitions/models.Module'
+        type: array
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  models.ModuleResponse:
+    properties:
+      code:
+        type: string
+      data:
+        $ref: '#/definitions/models.Module'
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  models.UpdateCourseRequest:
+    properties:
+      category_id:
+        type: integer
+      cover:
+        type: string
+      description:
+        type: string
+      slug:
+        type: string
+      status:
+        type: string
+      title:
+        type: string
+      visibility:
+        type: string
+    type: object
+  models.UpdateModuleRequest:
+    properties:
+      body:
+        type: string
+      course_id:
+        type: integer
+      cover:
+        type: string
+      description:
+        type: string
+      slug:
+        type: string
+      title:
+        type: string
+    type: object
+host: localhost:8082
+info:
+  contact: {}
+  description: Service for CMS service ALOPE!
+  title: Alope Course CMS Service API
+  version: "1.0"
+paths:
+  /categories:
+    get:
+      description: Get all categories list
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get all categories
+      tags:
+      - categories
+    post:
+      consumes:
+      - application/json
+      description: Create a new category with the provided data
+      parameters:
+      - description: Category data
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.Category'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Create a new category
+      tags:
+      - categories
+  /categories/{id}:
+    delete:
+      description: Delete a category by ID
+      parameters:
+      - description: Category ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Delete a category
+      tags:
+      - categories
+    get:
+      description: Get a single category by its ID
+      parameters:
+      - description: Category ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get category by ID
+      tags:
+      - categories
+    put:
+      consumes:
+      - application/json
+      description: Update category data by ID
+      parameters:
+      - description: Category ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Category data
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.Category'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Update a category
+      tags:
+      - categories
+  /courses:
+    get:
+      description: Get all courses list
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.CourseListResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.CourseErrorResponse'
+      summary: Get all courses
+      tags:
+      - courses
+    post:
+      consumes:
+      - application/json
+      description: Create a new course with the provided data
+      parameters:
+      - description: Course data
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateCourseRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.CourseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.CourseErrorResponse'
+      summary: Create a new course
+      tags:
+      - courses
+  /courses/{id}:
+    delete:
+      description: Delete a course by ID
+      parameters:
+      - description: Course ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.CourseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.CourseErrorResponse'
+      summary: Delete a course
+      tags:
+      - courses
+    get:
+      description: Get a single course by its ID
+      parameters:
+      - description: Course ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.CourseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.CourseErrorResponse'
+      summary: Get course by ID
+      tags:
+      - courses
+    put:
+      consumes:
+      - application/json
+      description: Update course data by ID
+      parameters:
+      - description: Course ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Course data
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateCourseRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.CourseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.CourseErrorResponse'
+      summary: Update a course
+      tags:
+      - courses
+  /courses/category/{id}:
+    get:
+      description: Get all courses in a specific category
+      parameters:
+      - description: Category ID
+        in: query
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.CourseListResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.CourseErrorResponse'
+      summary: Get courses by category
+      tags:
+      - courses
+  /courses/slug/{slug}:
+    get:
+      description: Get a single course by its slug
+      parameters:
+      - description: Course Slug
+        in: path
+        name: slug
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.CourseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.CourseErrorResponse'
+      summary: Get course by slug
+      tags:
+      - courses
+  /courses/status/{status}:
+    get:
+      description: Get all courses with a specific status
+      parameters:
+      - description: Status (draft, published, archived)
+        in: query
+        name: status
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.CourseListResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.CourseErrorResponse'
+      summary: Get courses by status
+      tags:
+      - courses
+  /modules:
+    get:
+      description: Get all modules list
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ModuleListResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ModuleErrorResponse'
+      summary: Get all modules
+      tags:
+      - modules
+    post:
+      consumes:
+      - application/json
+      description: Create a new module with the provided data
+      parameters:
+      - description: Module data
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateModuleRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.ModuleResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ModuleErrorResponse'
+      summary: Create a new module
+      tags:
+      - modules
+  /modules/{id}:
+    delete:
+      description: Delete a module by ID
+      parameters:
+      - description: Module ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ModuleResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ModuleErrorResponse'
+      summary: Delete a module
+      tags:
+      - modules
+    get:
+      description: Get a single module by its ID
+      parameters:
+      - description: Module ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ModuleResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ModuleErrorResponse'
+      summary: Get module by ID
+      tags:
+      - modules
+    put:
+      consumes:
+      - application/json
+      description: Update module data by ID
+      parameters:
+      - description: Module ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Module data
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateModuleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ModuleResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ModuleErrorResponse'
+      summary: Update a module
+      tags:
+      - modules
+  /modules/course/{id}:
+    get:
+      description: Get all modules in a specific course
+      parameters:
+      - description: Course ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ModuleListResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ModuleErrorResponse'
+      summary: Get modules by course
+      tags:
+      - modules
+  /modules/slug/{slug}:
+    get:
+      description: Get a single module by its slug
+      parameters:
+      - description: Module Slug
+        in: path
+        name: slug
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ModuleResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ModuleErrorResponse'
+      summary: Get module by slug
+      tags:
+      - modules
+swagger: "2.0"
