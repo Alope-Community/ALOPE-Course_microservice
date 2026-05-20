@@ -20,7 +20,7 @@ export default function SimpleBlogCardComponent({
     return (
         <Link
             href={`/blogs/${props.slug}`}
-            className="block w-full max-w-md overflow-hidden rounded-2xl border-2 border-gray-300 bg-white transition"
+            className="block w-full max-w-md overflow-hidden rounded-2xl bg-white transition shadow-md"
         >
             <img
                 src={props.cover || '/images/thumb.png'}
