@@ -1,0 +1,53 @@
+import { IconCirclePersonFill, IconStarFill } from 'justd-icons';
+
+// type lokal
+type Testimonial = {
+    message: string;
+    rating: number;
+    profession: string;
+    user: {
+        name: string;
+    };
+};
+
+export default function TestimonialCardComponent({
+    testimonial,
+}: {
+    testimonial: Testimonial;
+}) {
+    return (
+        <div className="rounded-2xl border border-gray-200 bg-white p-6">
+            <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-blue-500">
+                <svg
+                    className="h-5 w-5 text-white"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                >
+                    <path d="M7.17 6A5 5 0 0 0 2 11v7h7v-7H6.26a3 3 0 0 1 2.91-2.24L9 6.17A5 5 0 0 0 7.17 6zm10 0A5 5 0 0 0 12 11v7h7v-7h-2.74a3 3 0 0 1 2.91-2.24L19 6.17A5 5 0 0 0 17.17 6z" />
+                </svg>
+            </div>
+            <p className="mb-6 leading-relaxed text-gray-700">
+                {testimonial.message}
+            </p>
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                    <IconCirclePersonFill className="size-10" />
+                    <div>
+                        <p className="font-semibold">
+                            {testimonial.user.name}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                            {testimonial.profession}
+                        </p>
+                    </div>
+                </div>
+                <div className="flex items-center gap-1">
+                    <IconStarFill className="h-4 w-4 text-yellow-400" />
+                    <span className="font-semibold">
+                        {testimonial.rating.toFixed(1)}
+                    </span>
+                </div>
+            </div>
+        </div>
+    );
+}

@@ -1,0 +1,247 @@
+'use client';
+
+import Link from 'next/link';
+import ConfirmationDialog from './ConfirmationDialog';
+import PrimaryButton from './PrimaryButton';
+import LoginPopupComponent from './PopUp/LoginPopup';
+import { IconCirclePersonFill, IconHamburger, IconX } from 'justd-icons';
+import { useState } from 'react';
+import { usePathname } from 'next/navigation';
+import toast from 'react-hot-toast';
+
+const auth = {
+    user: {
+        name: 'Rocky',
+    },
+};
+
+export default function NavbarComponent() {
+    const pathname = usePathname();
+
+    const [isOpen, setIsOpen] = useState(false);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [isLoginOpen, setIsLoginOpen] = useState(false);
+    const [isLogoutOpen, setIsLogoutOpen] = useState(false);
+
+    const navLinks = [
+        { name: 'Beranda', href: '/' },
+        { name: 'Kursus', href: '/courses' },
+        { name: 'Modul', href: '/modules' },
+        { name: 'Video', href: '/videos/kickstart-ml-persiapan' },
+        { name: 'Event', href: '/events' },
+    ];
+
+    const isActive = (path: string) => {
+        if (path === '/' || path === '/beranda') {
+            return pathname === path;
+        }
+
+        return (
+            pathname === path ||
+            pathname.startsWith(`${path}/`) ||
+            pathname.startsWith(`${path}?`)
+        );
+    };
+
+    return (
+        <>
+            <ConfirmationDialog
+                isDangerous
+                isOpen={isLogoutOpen}
+                title="Keluar"
+                message={'Apakah Anda yakin ingin keluar?'}
+                confirmLabel="Keluar"
+                cancelLabel="Batal"
+                onConfirm={() => {
+                    setIsLogoutOpen(false);
+                    toast.loading('Logout...');
+
+                    setTimeout(() => {
+                        toast.success('Berhasil logout');
+                        window.location.reload();
+                    }, 1000);
+                }}
+                onCancel={() => setIsLogoutOpen(false)}
+            />
+            <nav className="fixed left-0 right-0 top-0 z-50 bg-white">
+                <div className="container mx-auto flex items-center justify-between px-4 py-3 md:px-10 md:py-5 lg:px-14 xl:px-20">
+                    <Link href="/" className="flex items-center gap-3">
+                        <img
+                            src="/images/logo/alope-blue.png"
+                            alt="Alope Course Logo"
+                            className="size-8 object-contain sm:size-10"
+                        />
+                        <div className="leading-tight">
+                            <h1 className="font-semibold text-primary sm:text-lg">
+                                Alope Course
+                            </h1>
+                            <p className="-mt-1 text-xs text-gray-500 sm:text-sm">
+                                Upgrade Your Skills
+                            </p>
+                        </div>
+                    </Link>
+                    <ul className="hidden items-center gap-8 font-medium lg:flex">
+                        {navLinks.map((link) => (
+                            <li key={link.href}>
+                                <Link
+                                    href={link.href}
+                                    className={`transition hover:text-primary ${
+                                        isActive(link.href)
+                                            ? 'font-semibold text-primary'
+                                            : 'text-gray-600'
+                                    }`}
+                                >
+                                    {link.name}
+                                </Link>
+                            </li>
+                        ))}
+                    </ul>
+                    <div className="hidden items-center gap-4 lg:flex">
+                        {auth.user ? (
+                            <div className="relative">
+                                <button
+                                    onClick={() =>
+                                        setIsDropdownOpen(!isDropdownOpen)
+                                    }
+                                    className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-gray-700 transition ${
+                                        isDropdownOpen
+                                            ? 'bg-primary text-white'
+                                            : 'hover:bg-primary hover:text-white'
+                                    }`}
+                                >
+                                    <IconCirclePersonFill className="size-5" />
+                                    <span>{auth.user.name}</span>
+                                </button>
+
+                                {isDropdownOpen && (
+                                    <div className="absolute right-0 mt-2 w-48 rounded-lg bg-white py-2 shadow-lg">
+                                        <Link
+                                            href="/profile"
+                                            className="block px-4 py-2 hover:bg-gray-100"
+                                        >
+                                            Profile
+                                        </Link>
+                                        <button
+                                            className="block w-full px-4 py-2 text-left text-red-600 hover:bg-gray-100"
+                                            onClick={() =>
+                                                setIsLogoutOpen(true)
+                                            }
+                                        >
+                                            Logout
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="flex items-center gap-3">
+                                <PrimaryButton
+                                    onClick={() =>
+                                        setIsLoginOpen((prev) => !prev)
+                                    }
+                                    variant="primary"
+                                    showIcon={false}
+                                >
+                                    Masuk
+                                </PrimaryButton>
+                            </div>
+                        )}
+                    </div>
+                    <button
+                        onClick={() => setIsOpen(!isOpen)}
+                        className="text-gray-700 lg:hidden"
+                    >
+                        {isOpen ? (
+                            <IconX className="size-6" />
+                        ) : (
+                            <IconHamburger className="size-6" />
+                        )}
+                    </button>
+                </div>
+            </nav>
+            <div className="h-[76px] bg-gradient-to-tr from-white to-yellow-50 md:h-[80px]" />
+            <aside
+                className={`fixed left-0 top-14 md:top-[84px] z-50 h-full w-72 transform bg-white shadow-lg transition-transform lg:hidden ${
+                    isOpen ? 'translate-x-0' : '-translate-x-full'
+                }`}
+            >
+                <div className="flex items-center gap-3 border-b px-6 py-6">
+                    <IconCirclePersonFill className="size-10 text-primary" />
+                    <div>
+                        <p className="text-sm text-gray-500">
+                            Selamat datang
+                        </p>
+                        <p className="font-semibold text-gray-800">
+                            {auth.user ? auth.user.name : 'Guest'}
+                        </p>
+                    </div>
+                </div>
+                <ul className="mt-6 flex flex-col gap-2 px-6 font-medium">
+                    {navLinks.map((link) => (
+                        <li key={link.href}>
+                            <Link
+                                href={link.href}
+                                className={`block rounded-lg px-4 py-2 transition ${
+                                    isActive(link.href)
+                                        ? 'bg-primary/10 font-semibold text-primary'
+                                        : 'text-gray-600 hover:bg-gray-100'
+                                }`}
+                                onClick={() => setIsOpen(false)}
+                            >
+                                {link.name}
+                            </Link>
+                        </li>
+                    ))}
+                </ul>
+                <div className="my-6 border-t" />
+                <div className="px-6">
+                    {auth.user ? (
+                        <div className="flex flex-col gap-3">
+                            <Link
+                                href="/profile"
+                                className="rounded-lg px-4 py-2 text-gray-700 hover:bg-gray-100"
+                                onClick={() => setIsOpen(false)}
+                            >
+                                Profile
+                            </Link>
+                            <button
+                                onClick={() => {
+                                    setIsOpen(false);
+                                    setIsLogoutOpen(true);
+                                }}
+                                className="rounded-lg bg-red-50 px-4 py-2 text-left text-red-600 hover:bg-red-100"
+                            >
+                                Logout
+                            </button>
+                        </div>
+                    ) : (
+                        <Link href="/login" onClick={() => setIsOpen(false)}>
+                            <PrimaryButton
+                                variant="primary"
+                                showIcon={false}
+                                className="w-full !rounded-xl !py-2"
+                            >
+                                Masuk
+                            </PrimaryButton>
+                        </Link>
+                    )}
+                </div>
+            </aside>
+            {isOpen && (
+                <div
+                    className="fixed inset-0 z-30 bg-black/40 backdrop-blur-sm lg:hidden"
+                    onClick={() => setIsOpen(false)}
+                />
+            )}
+            {isDropdownOpen && (
+                <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setIsDropdownOpen(false)}
+                />
+            )}
+            <LoginPopupComponent
+                isOpen={isLoginOpen}
+                onClose={() => setIsLoginOpen(false)}
+            />
+        </>
+    );
+}
