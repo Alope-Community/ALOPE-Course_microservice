@@ -21,16 +21,16 @@ func GetAllCourses() ([]models.Course, error) {
 	return courses, nil
 }
 
-func GetCourseByID(id uint) (models.Course, error) {
+func GetCourseByID(id uint) (*models.Course, error) {
 	db := config.DB
 	var course models.Course
 
-	err := db.First(&course, id).Preload("Category").Error
+	err := db.Preload("Category").First(&course, id).Error
 	if err != nil {
-		return models.Course{}, err
+		return &models.Course{}, err
 	}
 
-	return course, nil
+	return &course, nil
 }
 
 func GetCourseBySlug(slug string) (models.Course, error) {
@@ -56,18 +56,18 @@ func CreateCourse(course *models.Course) (models.Course, error) {
 	return *course, nil
 }
 
-func UpdateCourse(id uint, course *models.Course) (models.Course, error) {
+func UpdateCourse(id uint, course *models.Course) (*models.Course, error) {
 	db := config.DB
 
 	err := db.Model(&models.Course{}).Where("id = ?", id).Updates(course).Error
 	if err != nil {
-		return models.Course{}, err
+		return &models.Course{}, err
 	}
 
 	// Ambil data terbaru
 	updatedCourse, err := GetCourseByID(id)
 	if err != nil {
-		return models.Course{}, err
+		return &models.Course{}, err
 	}
 
 	return updatedCourse, nil

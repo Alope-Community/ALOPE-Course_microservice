@@ -31,6 +31,7 @@ func main() {
 	}
 
 	config.ConnectDB()
+	config.ConnectRedis()
 
 	r := routes.SetupRouter()
 

@@ -3,11 +3,21 @@ package handlers
 import (
 	"alope-course/cms-service/internal/models"
 	"alope-course/cms-service/internal/services"
+	"errors"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
+
+type CategoryHandler struct {
+	service services.CategoryService
+}
+
+func NewCategoryHandler(service services.CategoryService) *CategoryHandler {
+	return &CategoryHandler{service: service}
+}
 
 // GetAllCategory godoc
 // @Summary      Get all categories
@@ -16,24 +26,26 @@ import (
 // @Produce      json
 // @Success      200  {object}  map[string]interface{}
 // @Router       /categories [get]
-func GetAllCategories(c *gin.Context) {
-	categories, err := services.GetAllCategory()
+func (h *CategoryHandler) GetAllCategories(c *gin.Context) {
+	categories, err := h.service.GetCategories()
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"status":  "error",
-			"code":    "CMS-001",
-			"message": "Gagal mengambil data list kategori",
-			"data":    err.Error(),
-		})
+		res := models.Response[string]{
+			Message: "Gagal mengambil data list kategori.",
+			Status:  "error",
+			Code:    "ALP-003",
+			Data:    err.Error(),
+		}
+
+		c.JSON(http.StatusInternalServerError, res)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"status":  "success",
-		"code":    "CMS-000",
-		"message": "Berhasil mengambil data kategori",
-		"data":    categories,
+	c.JSON(http.StatusOK, models.Response[[]models.Category]{
+		Message: "Berhasil mendapatkan data list kategori.",
+		Status:  "success",
+		Code:    "ALP-001",
+		Data:    categories,
 	})
 }
 
@@ -45,36 +57,87 @@ func GetAllCategories(c *gin.Context) {
 // @Param        id   path      int  true  "Category ID"
 // @Success      200  {object}  map[string]interface{}
 // @Router       /categories/{id} [get]
-func GetCategoryByID(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+func (h *CategoryHandler) GetCategoryByID(c *gin.Context) {
+	id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
+
+	category, err := h.service.GetCategoryByID(uint(id))
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"status":  "error",
-			"code":    "CMS-002",
-			"message": "ID tidak valid",
-			"data":    err.Error(),
-		})
+
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			res := models.Response[string]{
+				Message: "Data tidak ditemukan.",
+				Status:  "error",
+				Code:    "ALP-002",
+				Data:    err.Error(),
+			}
+
+			c.JSON(http.StatusNotFound, res)
+			return
+		}
+
+		res := models.Response[string]{
+			Message: "Gagal mengambil data kategori.",
+			Status:  "error",
+			Code:    "ALP-003",
+			Data:    err.Error(),
+		}
+
+		c.JSON(http.StatusInternalServerError, res)
 		return
 	}
 
-	category, err := services.GetCategoryByID(uint(id))
+	c.JSON(http.StatusOK, models.Response[*models.Category]{
+		Message: "Berhasil mengambil data kategori.",
+		Status:  "success",
+		Code:    "ALP-001",
+		Data:    category,
+	})
+}
+
+// GetCategoryBySlug godoc
+// @Summary      Get category by slug
+// @Description  Get a single category by its slug
+// @Tags         categories
+// @Produce      json
+// @Param        slug   path      int  true  "Category slug"
+// @Success      200  {object}  map[string]interface{}
+// @Router       /categories/slug/{slug} [get]
+func (h *CategoryHandler) GetCategoryBySlug(c *gin.Context) {
+	slug := c.Param("slug")
+
+	category, err := h.service.GetCategoryBySlug(slug)
 
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"status":  "error",
-			"code":    "CMS-003",
-			"message": "Kategori tidak ditemukan",
-			"data":    err.Error(),
-		})
+
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			res := models.Response[string]{
+				Message: "Data tidak ditemukan.",
+				Status:  "error",
+				Code:    "ALP-002",
+				Data:    err.Error(),
+			}
+
+			c.JSON(http.StatusNotFound, res)
+			return
+		}
+
+		res := models.Response[string]{
+			Message: "Gagal mengambil data kategori.",
+			Status:  "error",
+			Code:    "ALP-003",
+			Data:    err.Error(),
+		}
+
+		c.JSON(http.StatusInternalServerError, res)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"status":  "success",
-		"code":    "CMS-000",
-		"message": "Berhasil mengambil data kategori",
-		"data":    category,
+	c.JSON(http.StatusOK, models.Response[*models.Category]{
+		Message: "Berhasil mengambil data kategori.",
+		Status:  "success",
+		Code:    "ALP-001",
+		Data:    category,
 	})
 }
 
@@ -87,36 +150,39 @@ func GetCategoryByID(c *gin.Context) {
 // @Param        body  body      models.Category  true  "Category data"
 // @Success      201   {object}  map[string]interface{}
 // @Router       /categories [post]
-func CreateCategory(c *gin.Context) {
+func (h *CategoryHandler) CreateCategory(c *gin.Context) {
 	var req models.Category
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"status":  "error",
-			"code":    "CMS-004",
-			"message": "Request tidak valid",
-			"data":    err.Error(),
+
+		c.JSON(http.StatusBadRequest, models.Response[string]{
+			Message: "Invalid request.",
+			Status:  "error",
+			Code:    "ALP-003",
+			Data:    err.Error(),
 		})
+
 		return
 	}
 
-	category, err := services.CreateCategory(&req)
+	category, err := h.service.CreateCategory(&req)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"status":  "error",
-			"code":    "CMS-005",
-			"message": "Gagal membuat kategori",
-			"data":    err.Error(),
+		c.JSON(http.StatusInternalServerError, models.Response[string]{
+			Message: "Gagal membuat kategori",
+			Status:  "error",
+			Code:    "ALP-003",
+			Data:    err.Error(),
 		})
+
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{
-		"status":  "success",
-		"code":    "CMS-000",
-		"message": "Berhasil membuat kategori",
-		"data":    category,
+	c.JSON(http.StatusCreated, models.Response[models.Category]{
+		Message: "Berhasil membuat kategori.",
+		Status:  "success",
+		Code:    "ALP-001",
+		Data:    category,
 	})
 }
 
@@ -130,48 +196,52 @@ func CreateCategory(c *gin.Context) {
 // @Param        body  body      models.Category  true  "Category data"
 // @Success      200   {object}  map[string]interface{}
 // @Router       /categories/{id} [put]
-func UpdateCategory(c *gin.Context) {
+func (h *CategoryHandler) UpdateCategory(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"status":  "error",
-			"code":    "CMS-002",
-			"message": "ID tidak valid",
-			"data":    err.Error(),
+
+		c.JSON(http.StatusBadRequest, models.Response[string]{
+			Message: "Invalid ID.",
+			Status:  "error",
+			Code:    "ALP-003",
+			Data:    err.Error(),
 		})
+
 		return
 	}
 
 	var req models.Category
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"status":  "error",
-			"code":    "CMS-004",
-			"message": "Request tidak valid",
-			"data":    err.Error(),
+		c.JSON(http.StatusBadRequest, models.Response[string]{
+			Message: "Invalid request.",
+			Status:  "error",
+			Code:    "ALP-003",
+			Data:    err.Error(),
 		})
+
 		return
 	}
 
-	category, err := services.UpdateCategory(uint(id), &req)
+	category, err := h.service.UpdateCategory(uint(id), &req)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"status":  "error",
-			"code":    "CMS-006",
-			"message": "Gagal mengupdate kategori",
-			"data":    err.Error(),
+		c.JSON(http.StatusInternalServerError, models.Response[string]{
+			Message: "Gagal update kategori.",
+			Status:  "error",
+			Code:    "ALP-003",
+			Data:    err.Error(),
 		})
+
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"status":  "success",
-		"code":    "CMS-000",
-		"message": "Berhasil mengupdate kategori",
-		"data":    category,
+	c.JSON(http.StatusOK, models.Response[models.Category]{
+		Message: "Berhasil update kategori.",
+		Status:  "success",
+		Code:    "ALP-001",
+		Data:    *category,
 	})
 }
 
@@ -183,34 +253,38 @@ func UpdateCategory(c *gin.Context) {
 // @Param        id   path      int  true  "Category ID"
 // @Success      200  {object}  map[string]interface{}
 // @Router       /categories/{id} [delete]
-func DeleteCategory(c *gin.Context) {
+func (h *CategoryHandler) DeleteCategory(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"status":  "error",
-			"code":    "CMS-002",
-			"message": "ID tidak valid",
-			"data":    err.Error(),
+		c.JSON(http.StatusBadRequest, models.Response[string]{
+			Message: "Invalid ID.",
+			Status:  "error",
+			Code:    "ALP-003",
+			Data:    err.Error(),
 		})
+
 		return
 	}
 
-	err = services.DeleteCategory(uint(id))
+	err = h.service.DeleteCategory(uint(id))
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"status":  "error",
-			"code":    "CMS-007",
-			"message": "Gagal menghapus kategori",
-			"data":    err.Error(),
+
+		c.JSON(http.StatusInternalServerError, models.Response[string]{
+			Message: "Gagal menghapus kategori.",
+			Status:  "error",
+			Code:    "ALP-003",
+			Data:    err.Error(),
 		})
+
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"status":  "success",
-		"code":    "CMS-000",
-		"message": "Berhasil menghapus kategori",
+	c.JSON(http.StatusOK, models.Response[any]{
+		Message: "Berhasil menghapus kategori.",
+		Status:  "success",
+		Code:    "ALP-001",
+		Data:    nil,
 	})
 }

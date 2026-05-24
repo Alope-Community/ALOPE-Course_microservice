@@ -1,10 +1,9 @@
 package seeders
 
 import (
+	"alope-course/cms-service/internal/helpers"
 	model "alope-course/cms-service/internal/models"
 	"log"
-
-	helpers "alope-course/cms-service/internal/utils"
 
 	"gorm.io/gorm"
 )

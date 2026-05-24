@@ -7,39 +7,55 @@ import (
 	"alope-course/cms-service/internal/repositories"
 )
 
-func GetAllModules() ([]models.Module, error) {
-	modules, err := repositories.GetAllModules()
-	if err != nil {
-		return nil, err
-	}
-	return modules, nil
+type ModuleService interface {
+	GetModules() ([]models.Module, error)
+	GetModuleByID(id uint) (*models.Module, error)
+	GetModuleBySlug(slug string) (*models.Module, error)
+	GetModulesByCourse(courseID uint) ([]models.Module, error)
+	CreateModule(req *models.CreateModuleRequest) (models.Module, error)
+	UpdateModule(id uint, req *models.UpdateModuleRequest) (*models.Module, error)
+	DeleteModule(id uint) error
 }
 
-func GetModuleByID(id uint) (models.Module, error) {
+type moduleService struct {
+	repo repositories.ModuleRepository
+}
+
+func NewModuleService(repo repositories.ModuleRepository) ModuleService {
+	return &moduleService{
+		repo: repo,
+	}
+}
+
+func (s *moduleService) GetModules() ([]models.Module, error) {
+	return s.repo.GetModules()
+}
+
+func (s *moduleService) GetModuleByID(id uint) (*models.Module, error) {
 	if id == 0 {
-		return models.Module{}, errors.New("ID tidak valid")
+		return nil, errors.New("ID tidak valid")
 	}
 
-	module, err := repositories.GetModuleByID(id)
-	if err != nil {
-		return models.Module{}, err
-	}
-	return module, nil
+	return s.repo.GetModuleByID(id)
 }
 
-func GetModuleBySlug(slug string) (models.Module, error) {
+func (s *moduleService) GetModuleBySlug(slug string) (*models.Module, error) {
 	if slug == "" {
-		return models.Module{}, errors.New("slug tidak valid")
+		return nil, errors.New("slug tidak valid")
 	}
 
-	module, err := repositories.GetModuleBySlug(slug)
-	if err != nil {
-		return models.Module{}, err
-	}
-	return module, nil
+	return s.repo.GetModuleBySlug(slug)
 }
 
-func CreateModule(req *models.CreateModuleRequest) (models.Module, error) {
+func (s *moduleService) GetModulesByCourse(courseID uint) ([]models.Module, error) {
+	if courseID == 0 {
+		return nil, errors.New("course_id tidak valid")
+	}
+
+	return s.repo.GetModulesByCourse(courseID)
+}
+
+func (s *moduleService) CreateModule(req *models.CreateModuleRequest) (models.Module, error) {
 	if req.Title == "" || req.Slug == "" {
 		return models.Module{}, errors.New("title dan slug harus diisi")
 	}
@@ -48,7 +64,7 @@ func CreateModule(req *models.CreateModuleRequest) (models.Module, error) {
 		return models.Module{}, errors.New("course_id harus diisi")
 	}
 
-	// Validasi course ada
+	// Validasi course ada (menggunakan fungsi global repositories)
 	_, err := repositories.GetCourseByID(req.CourseID)
 	if err != nil {
 		return models.Module{}, errors.New("course tidak ditemukan")
@@ -63,28 +79,25 @@ func CreateModule(req *models.CreateModuleRequest) (models.Module, error) {
 		Body:        req.Body,
 	}
 
-	createdModule, err := repositories.CreateModule(&module)
-	if err != nil {
-		return models.Module{}, err
-	}
-	return createdModule, nil
+	return s.repo.CreateModule(&module)
 }
 
-func UpdateModule(id uint, req *models.UpdateModuleRequest) (models.Module, error) {
+func (s *moduleService) UpdateModule(id uint, req *models.UpdateModuleRequest) (*models.Module, error) {
 	if id == 0 {
-		return models.Module{}, errors.New("ID tidak valid")
+		return nil, errors.New("ID tidak valid")
 	}
 
-	_, err := repositories.GetModuleByID(id)
+	// Validasi module ada
+	_, err := s.repo.GetModuleByID(id)
 	if err != nil {
-		return models.Module{}, errors.New("module tidak ditemukan")
+		return nil, errors.New("module tidak ditemukan")
 	}
 
 	// Validasi course jika di-update
 	if req.CourseID != 0 {
 		_, err := repositories.GetCourseByID(req.CourseID)
 		if err != nil {
-			return models.Module{}, errors.New("course tidak ditemukan")
+			return nil, errors.New("course tidak ditemukan")
 		}
 	}
 
@@ -97,39 +110,18 @@ func UpdateModule(id uint, req *models.UpdateModuleRequest) (models.Module, erro
 		Body:        req.Body,
 	}
 
-	updatedModule, err := repositories.UpdateModule(id, &module)
-	if err != nil {
-		return models.Module{}, err
-	}
-	return updatedModule, nil
+	return s.repo.UpdateModule(id, &module)
 }
 
-func DeleteModule(id uint) error {
+func (s *moduleService) DeleteModule(id uint) error {
 	if id == 0 {
 		return errors.New("ID tidak valid")
 	}
 
-	_, err := repositories.GetModuleByID(id)
+	_, err := s.repo.GetModuleByID(id)
 	if err != nil {
 		return errors.New("module tidak ditemukan")
 	}
 
-	err = repositories.DeleteModule(id)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func GetModulesByCourse(courseID uint) ([]models.Module, error) {
-	if courseID == 0 {
-		return nil, errors.New("course_id tidak valid")
-	}
-
-	modules, err := repositories.GetModulesByCourse(courseID)
-	if err != nil {
-		return nil, err
-	}
-	return modules, nil
+	return s.repo.DeleteModule(id)
 }
