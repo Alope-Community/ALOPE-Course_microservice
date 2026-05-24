@@ -3,12 +3,16 @@ package routes
 import (
 	"net/http"
 
+	"alope-course/cms-service/internal/bootstrap"
 	"alope-course/cms-service/internal/handlers"
 
 	"github.com/gin-gonic/gin"
 )
 
 func SetupRouter() *gin.Engine {
+
+	app := bootstrap.InjectApp()
+
 	r := gin.Default()
 
 	api := r.Group("/api/cms")
@@ -17,7 +21,7 @@ func SetupRouter() *gin.Engine {
 			c.JSON(http.StatusOK, gin.H{"message": "CMS Service is Active!"})
 		})
 
-		// Courses endpoints
+		// Courses endpoints (Global functions)
 		courses := api.Group("/courses")
 		{
 			courses.GET("", handlers.GetAllCourses)
@@ -33,23 +37,24 @@ func SetupRouter() *gin.Engine {
 		// Categories endpoints
 		categories := api.Group("/categories")
 		{
-			categories.GET("", handlers.GetAllCategories)
-			categories.GET("/:id", handlers.GetCategoryByID)
-			categories.POST("", handlers.CreateCategory)
-			categories.PUT("/:id", handlers.UpdateCategory)
-			categories.DELETE("/:id", handlers.DeleteCategory)
+			categories.GET("", app.CategoryHandler.GetAllCategories)
+			categories.GET("/:id", app.CategoryHandler.GetCategoryByID)
+			categories.GET("/slug/:slug", app.CategoryHandler.GetCategoryBySlug)
+			categories.POST("", app.CategoryHandler.CreateCategory)
+			categories.PUT("/:id", app.CategoryHandler.UpdateCategory)
+			categories.DELETE("/:id", app.CategoryHandler.DeleteCategory)
 		}
 
 		// Modules endpoints
 		modules := api.Group("/modules")
 		{
-			modules.GET("", handlers.GetAllModules)
-			modules.GET("/:id", handlers.GetModuleByID)
-			modules.GET("/slug/:slug", handlers.GetModuleBySlug)
-			modules.POST("", handlers.CreateModule)
-			modules.PUT("/:id", handlers.UpdateModule)
-			modules.DELETE("/:id", handlers.DeleteModule)
-			modules.GET("/course/:id", handlers.GetModulesByCourse)
+			modules.GET("", app.ModuleHandler.GetAllModules)
+			modules.GET("/:id", app.ModuleHandler.GetModuleByID)
+			modules.GET("/slug/:slug", app.ModuleHandler.GetModuleBySlug)
+			modules.POST("", app.ModuleHandler.CreateModule)
+			modules.PUT("/:id", app.ModuleHandler.UpdateModule)
+			modules.DELETE("/:id", app.ModuleHandler.DeleteModule)
+			modules.GET("/course/:id", app.ModuleHandler.GetModulesByCourse)
 		}
 	}
 

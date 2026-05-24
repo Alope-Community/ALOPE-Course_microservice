@@ -4,7 +4,7 @@ import (
 	model "alope-course/course-service/internal/models"
 	"log"
 
-	helpers "alope-course/course-service/internal/utils"
+	"alope-course/course-service/internal/helpers"
 
 	"gorm.io/gorm"
 )

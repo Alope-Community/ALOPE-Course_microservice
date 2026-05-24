@@ -54,6 +54,10 @@ func main() {
 			log.Fatalf("Gagal menjalankan seeder: %v", err)
 		}
 
+		if err := seeders.SeedModules(db); err != nil {
+			log.Fatalf("Gagal menjalankan seeder: %v", err)
+		}
+
 		log.Println("✅ Seeding sukses!")
 	}
 }

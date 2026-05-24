@@ -1,14 +1,23 @@
 package handlers
 
 import (
+	"alope-course/cms-service/internal/models"
+	"alope-course/cms-service/internal/services"
+	"errors"
 	"net/http"
 	"strconv"
 
-	"alope-course/cms-service/internal/models"
-	"alope-course/cms-service/internal/services"
-
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
+
+type ModuleHandler struct {
+	service services.ModuleService
+}
+
+func NewModuleHandler(service services.ModuleService) *ModuleHandler {
+	return &ModuleHandler{service: service}
+}
 
 // GetAllModules godoc
 // @Summary      Get all modules
@@ -18,23 +27,26 @@ import (
 // @Success 200 {object} models.ModuleListResponse
 // @Failure 500 {object} models.ModuleErrorResponse
 // @Router       /modules [get]
-func GetAllModules(c *gin.Context) {
-	modules, err := services.GetAllModules()
+func (h *ModuleHandler) GetAllModules(c *gin.Context) {
+	modules, err := h.service.GetModules()
+
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"status":  "error",
-			"code":    "CMS-001",
-			"message": "Gagal mengambil data module",
-			"data":    err.Error(),
-		})
+		res := models.Response[string]{
+			Message: "Gagal mengambil data list module.",
+			Status:  "error",
+			Code:    "ALP-003",
+			Data:    err.Error(),
+		}
+
+		c.JSON(http.StatusInternalServerError, res)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"status":  "success",
-		"code":    "CMS-000",
-		"message": "Berhasil mengambil data module",
-		"data":    modules,
+	c.JSON(http.StatusOK, models.Response[[]models.Module]{
+		Message: "Berhasil mendapatkan data list module.",
+		Status:  "success",
+		Code:    "ALP-001",
+		Data:    modules,
 	})
 }
 
@@ -47,34 +59,40 @@ func GetAllModules(c *gin.Context) {
 // @Success 200 {object} models.ModuleResponse
 // @Failure 500 {object} models.ModuleErrorResponse
 // @Router       /modules/{id} [get]
-func GetModuleByID(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+func (h *ModuleHandler) GetModuleByID(c *gin.Context) {
+	id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
+
+	module, err := h.service.GetModuleByID(uint(id))
+
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"status":  "error",
-			"code":    "CMS-002",
-			"message": "ID tidak valid",
-			"data":    err.Error(),
-		})
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			res := models.Response[string]{
+				Message: "Data tidak ditemukan.",
+				Status:  "error",
+				Code:    "ALP-002",
+				Data:    err.Error(),
+			}
+
+			c.JSON(http.StatusNotFound, res)
+			return
+		}
+
+		res := models.Response[string]{
+			Message: "Gagal mengambil data module.",
+			Status:  "error",
+			Code:    "ALP-003",
+			Data:    err.Error(),
+		}
+
+		c.JSON(http.StatusInternalServerError, res)
 		return
 	}
 
-	module, err := services.GetModuleByID(uint(id))
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"status":  "error",
-			"code":    "CMS-003",
-			"message": "Module tidak ditemukan",
-			"data":    err.Error(),
-		})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"status":  "success",
-		"code":    "CMS-000",
-		"message": "Berhasil mengambil data module",
-		"data":    module,
+	c.JSON(http.StatusOK, models.Response[*models.Module]{
+		Message: "Berhasil mengambil data module.",
+		Status:  "success",
+		Code:    "ALP-001",
+		Data:    module,
 	})
 }
 
@@ -87,33 +105,40 @@ func GetModuleByID(c *gin.Context) {
 // @Success 200 {object} models.ModuleResponse
 // @Failure 500 {object} models.ModuleErrorResponse
 // @Router       /modules/slug/{slug} [get]
-func GetModuleBySlug(c *gin.Context) {
+func (h *ModuleHandler) GetModuleBySlug(c *gin.Context) {
 	slug := c.Param("slug")
-	if slug == "" {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"status":  "error",
-			"code":    "CMS-002",
-			"message": "Slug tidak valid",
-		})
-		return
-	}
 
-	module, err := services.GetModuleBySlug(slug)
+	module, err := h.service.GetModuleBySlug(slug)
+
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"status":  "error",
-			"code":    "CMS-003",
-			"message": "Module tidak ditemukan",
-			"data":    err.Error(),
-		})
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			res := models.Response[string]{
+				Message: "Data tidak ditemukan.",
+				Status:  "error",
+				Code:    "ALP-002",
+				Data:    err.Error(),
+			}
+
+			c.JSON(http.StatusNotFound, res)
+			return
+		}
+
+		res := models.Response[string]{
+			Message: "Gagal mengambil data module.",
+			Status:  "error",
+			Code:    "ALP-003",
+			Data:    err.Error(),
+		}
+
+		c.JSON(http.StatusInternalServerError, res)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"status":  "success",
-		"code":    "CMS-000",
-		"message": "Berhasil mengambil data module",
-		"data":    module,
+	c.JSON(http.StatusOK, models.Response[*models.Module]{
+		Message: "Berhasil mengambil data module.",
+		Status:  "success",
+		Code:    "ALP-001",
+		Data:    module,
 	})
 }
 
@@ -127,35 +152,36 @@ func GetModuleBySlug(c *gin.Context) {
 // @Success 201 {object} models.ModuleResponse
 // @Failure 500 {object} models.ModuleErrorResponse
 // @Router       /modules [post]
-func CreateModule(c *gin.Context) {
+func (h *ModuleHandler) CreateModule(c *gin.Context) {
 	var req models.CreateModuleRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"status":  "error",
-			"code":    "CMS-004",
-			"message": "Request tidak valid",
-			"data":    err.Error(),
+		c.JSON(http.StatusBadRequest, models.Response[string]{
+			Message: "Invalid request.",
+			Status:  "error",
+			Code:    "ALP-003",
+			Data:    err.Error(),
 		})
 		return
 	}
 
-	module, err := services.CreateModule(&req)
+	module, err := h.service.CreateModule(&req)
+
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"status":  "error",
-			"code":    "CMS-005",
-			"message": "Gagal membuat module",
-			"data":    err.Error(),
+		c.JSON(http.StatusInternalServerError, models.Response[string]{
+			Message: "Gagal membuat module.",
+			Status:  "error",
+			Code:    "ALP-003",
+			Data:    err.Error(),
 		})
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{
-		"status":  "success",
-		"code":    "CMS-000",
-		"message": "Berhasil membuat module",
-		"data":    module,
+	c.JSON(http.StatusCreated, models.Response[models.Module]{
+		Message: "Berhasil membuat module.",
+		Status:  "success",
+		Code:    "ALP-001",
+		Data:    module,
 	})
 }
 
@@ -170,45 +196,47 @@ func CreateModule(c *gin.Context) {
 // @Success 200 {object} models.ModuleResponse
 // @Failure 500 {object} models.ModuleErrorResponse
 // @Router       /modules/{id} [put]
-func UpdateModule(c *gin.Context) {
+func (h *ModuleHandler) UpdateModule(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"status":  "error",
-			"code":    "CMS-002",
-			"message": "ID tidak valid",
-			"data":    err.Error(),
+		c.JSON(http.StatusBadRequest, models.Response[string]{
+			Message: "Invalid ID.",
+			Status:  "error",
+			Code:    "ALP-003",
+			Data:    err.Error(),
 		})
 		return
 	}
 
 	var req models.UpdateModuleRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"status":  "error",
-			"code":    "CMS-004",
-			"message": "Request tidak valid",
-			"data":    err.Error(),
+		c.JSON(http.StatusBadRequest, models.Response[string]{
+			Message: "Invalid request.",
+			Status:  "error",
+			Code:    "ALP-003",
+			Data:    err.Error(),
 		})
 		return
 	}
 
-	module, err := services.UpdateModule(uint(id), &req)
+	module, err := h.service.UpdateModule(uint(id), &req)
+
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"status":  "error",
-			"code":    "CMS-006",
-			"message": "Gagal mengupdate module",
-			"data":    err.Error(),
+		c.JSON(http.StatusInternalServerError, models.Response[string]{
+			Message: "Gagal update module.",
+			Status:  "error",
+			Code:    "ALP-003",
+			Data:    err.Error(),
 		})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"status":  "success",
-		"code":    "CMS-000",
-		"message": "Berhasil mengupdate module",
-		"data":    module,
+	c.JSON(http.StatusOK, models.Response[models.Module]{
+		Message: "Berhasil update module.",
+		Status:  "success",
+		Code:    "ALP-001",
+		Data:    *module,
 	})
 }
 
@@ -221,33 +249,36 @@ func UpdateModule(c *gin.Context) {
 // @Success 200 {object} models.ModuleResponse
 // @Failure 500 {object} models.ModuleErrorResponse
 // @Router       /modules/{id} [delete]
-func DeleteModule(c *gin.Context) {
+func (h *ModuleHandler) DeleteModule(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"status":  "error",
-			"code":    "CMS-002",
-			"message": "ID tidak valid",
-			"data":    err.Error(),
+		c.JSON(http.StatusBadRequest, models.Response[string]{
+			Message: "Invalid ID.",
+			Status:  "error",
+			Code:    "ALP-003",
+			Data:    err.Error(),
 		})
 		return
 	}
 
-	err = services.DeleteModule(uint(id))
+	err = h.service.DeleteModule(uint(id))
+
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"status":  "error",
-			"code":    "CMS-007",
-			"message": "Gagal menghapus module",
-			"data":    err.Error(),
+		c.JSON(http.StatusInternalServerError, models.Response[string]{
+			Message: "Gagal menghapus module.",
+			Status:  "error",
+			Code:    "ALP-003",
+			Data:    err.Error(),
 		})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"status":  "success",
-		"code":    "CMS-000",
-		"message": "Berhasil menghapus module",
+	c.JSON(http.StatusOK, models.Response[any]{
+		Message: "Berhasil menghapus module.",
+		Status:  "success",
+		Code:    "ALP-001",
+		Data:    nil,
 	})
 }
 
@@ -260,33 +291,27 @@ func DeleteModule(c *gin.Context) {
 // @Success 200 {object} models.ModuleListResponse
 // @Failure 500 {object} models.ModuleErrorResponse
 // @Router       /modules/course/{id} [get]
-func GetModulesByCourse(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+func (h *ModuleHandler) GetModulesByCourse(c *gin.Context) {
+	id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
+
+	modules, err := h.service.GetModulesByCourse(uint(id))
+
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"status":  "error",
-			"code":    "CMS-002",
-			"message": "Course ID tidak valid",
-			"data":    err.Error(),
-		})
+		res := models.Response[string]{
+			Message: "Gagal mengambil data list module.",
+			Status:  "error",
+			Code:    "ALP-003",
+			Data:    err.Error(),
+		}
+
+		c.JSON(http.StatusInternalServerError, res)
 		return
 	}
 
-	modules, err := services.GetModulesByCourse(uint(id))
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"status":  "error",
-			"code":    "CMS-008",
-			"message": "Gagal mengambil data module",
-			"data":    err.Error(),
-		})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"status":  "success",
-		"code":    "CMS-000",
-		"message": "Berhasil mengambil data module",
-		"data":    modules,
+	c.JSON(http.StatusOK, models.Response[[]models.Module]{
+		Message: "Berhasil mengambil data module.",
+		Status:  "success",
+		Code:    "ALP-001",
+		Data:    modules,
 	})
 }

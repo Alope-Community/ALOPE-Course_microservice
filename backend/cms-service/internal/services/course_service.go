@@ -15,14 +15,14 @@ func GetAllCourses() ([]models.Course, error) {
 	return courses, nil
 }
 
-func GetCourseByID(id uint) (models.Course, error) {
+func GetCourseByID(id uint) (*models.Course, error) {
 	if id == 0 {
-		return models.Course{}, errors.New("ID tidak valid")
+		return &models.Course{}, errors.New("ID tidak valid")
 	}
 
 	course, err := repositories.GetCourseByID(id)
 	if err != nil {
-		return models.Course{}, err
+		return &models.Course{}, err
 	}
 	return course, nil
 }
@@ -61,14 +61,14 @@ func CreateCourse(req *models.CreateCourseRequest) (models.Course, error) {
 	return createdCourse, nil
 }
 
-func UpdateCourse(id uint, req *models.UpdateCourseRequest) (models.Course, error) {
+func UpdateCourse(id uint, req *models.UpdateCourseRequest) (*models.Course, error) {
 	if id == 0 {
-		return models.Course{}, errors.New("ID tidak valid")
+		return &models.Course{}, errors.New("ID tidak valid")
 	}
 
 	_, err := repositories.GetCourseByID(id)
 	if err != nil {
-		return models.Course{}, errors.New("course tidak ditemukan")
+		return &models.Course{}, errors.New("course tidak ditemukan")
 	}
 
 	course := models.Course{
@@ -83,7 +83,7 @@ func UpdateCourse(id uint, req *models.UpdateCourseRequest) (models.Course, erro
 
 	updatedCourse, err := repositories.UpdateCourse(id, &course)
 	if err != nil {
-		return models.Course{}, err
+		return &models.Course{}, err
 	}
 	return updatedCourse, nil
 }
