@@ -1,7 +1,8 @@
-import React from 'react'
+import React from 'react';
+import LandingPage from './Pages/LandingPage';
 
 export default function HomePage() {
   return (
-    <div>Lets Build Something Awesome</div>
-  )
+    <LandingPage />
+  );
 }
