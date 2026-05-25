@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Menu, User, LogOut, Settings } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { ThemeToggle } from './ThemeToggle';
@@ -25,9 +25,9 @@ export function Topbar({ onToggleSidebar }: TopbarProps) {
   return (
     <header className="h-16 border-b border-zinc-200 bg-white/75 backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-950/75 flex items-center justify-between px-6 sticky top-0 z-10 transition-colors duration-200">
       <div className="flex items-center gap-4">
-        <Button 
-          variant="ghost" 
-          size="icon" 
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={onToggleSidebar}
           aria-label="Toggle Sidebar"
         >
@@ -37,7 +37,7 @@ export function Topbar({ onToggleSidebar }: TopbarProps) {
 
       <div className="flex items-center gap-4">
         <ThemeToggle />
-        
+
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={() => setIsProfileOpen(!isProfileOpen)}
@@ -45,9 +45,9 @@ export function Topbar({ onToggleSidebar }: TopbarProps) {
             aria-expanded={isProfileOpen}
             aria-haspopup="true"
           >
-            <img 
-              src="https://ui-avatars.com/api/?name=Admin+User&background=random" 
-              alt="Profile" 
+            <img
+              src="https://ui-avatars.com/api/?name=Admin+User&background=random"
+              alt="Profile"
               className="h-8 w-8 rounded-full object-cover shrink-0 ring-2 ring-white dark:ring-zinc-900 shadow-sm"
             />
           </button>
@@ -55,9 +55,9 @@ export function Topbar({ onToggleSidebar }: TopbarProps) {
           {isProfileOpen && (
             <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-lg py-1 z-50 animate-in fade-in zoom-in duration-200">
               <div className="px-4 py-3 border-b border-zinc-200 dark:border-zinc-800 flex items-center gap-3">
-                <img 
-                  src="https://ui-avatars.com/api/?name=Admin+User&background=random" 
-                  alt="Profile" 
+                <img
+                  src="https://ui-avatars.com/api/?name=Admin+User&background=random"
+                  alt="Profile"
                   className="h-10 w-10 rounded-full object-cover shrink-0 shadow-sm"
                 />
                 <div className="flex flex-col">
