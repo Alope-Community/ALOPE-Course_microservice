@@ -17,7 +17,7 @@ import { Button } from "../../components/ui/Button";
 
 export function Dashboard() {
   return (
-    <div className="flex flex-col gap-8 p-8 max-w-7xl mx-auto w-full animate-in fade-in duration-500">
+    <div className="flex flex-col gap-8 w-full animate-in fade-in duration-500">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
