@@ -1,10 +1,16 @@
 import { useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, Navigate } from 'react-router-dom';
 import { Sidebar } from '../components/shared/Sidebar';
 import { Topbar } from '../components/shared/Topbar';
+import { Breadcrumbs } from '../components/ui/Breadcrumbs';
 
 export default function DashboardLayouts() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  
+  const token = localStorage.getItem('auth_token');
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
 
   return (
     <div className="flex h-screen overflow-hidden bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-50 font-sans transition-colors duration-200">
@@ -19,6 +25,7 @@ export default function DashboardLayouts() {
         <Topbar onToggleSidebar={() => setIsSidebarOpen(prev => !prev)} />
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 relative">
           <div className="mx-auto w-full h-full">
+            <Breadcrumbs />
             <Outlet />
           </div>
         </main>

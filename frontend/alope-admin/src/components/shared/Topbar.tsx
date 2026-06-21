@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Menu, User, LogOut, Settings } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { ThemeToggle } from './ThemeToggle';
+import { useNavigate } from 'react-router-dom';
 
 interface TopbarProps {
   onToggleSidebar: () => void;
@@ -10,6 +11,12 @@ interface TopbarProps {
 export function Topbar({ onToggleSidebar }: TopbarProps) {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem('auth_token');
+    navigate('/login', { replace: true });
+  };
 
 
   useEffect(() => {
@@ -76,7 +83,10 @@ export function Topbar({ onToggleSidebar }: TopbarProps) {
                 </button>
               </div>
               <div className="border-t border-zinc-200 dark:border-zinc-800 p-2">
-                <button className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-950/50 transition-colors text-left">
+                <button 
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-950/50 transition-colors text-left"
+                >
                   <LogOut className="h-[18px] w-[18px] shrink-0" />
                   Sign out
                 </button>

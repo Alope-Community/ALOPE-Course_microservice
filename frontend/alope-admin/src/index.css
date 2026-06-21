@@ -7,3 +7,81 @@
   --color-alope-primary: #1e40af;
   --font-sans: "Inter", ui-sans-serif, system-ui;
 }
+
+/* CKEditor Custom Theme Overrides */
+.ck.ck-editor {
+  font-family: inherit;
+  width: 100%;
+}
+
+.ck.ck-editor__main > .ck-editor__editable {
+  min-height: 200px;
+  border-radius: 0 0 12px 12px !important;
+}
+
+.ck.ck-toolbar {
+  border-radius: 12px 12px 0 0 !important;
+}
+
+/* Dark mode styling */
+.dark {
+  --ck-color-base-background: #09090b;
+  --ck-color-base-border: #27272a;
+  --ck-color-toolbar-background: #18181b;
+  --ck-color-toolbar-border: #27272a;
+  --ck-color-text: #f4f4f5;
+  --ck-color-editor-base-text: #f4f4f5;
+  --ck-color-input-background: #09090b;
+  --ck-color-input-text: #f4f4f5;
+  --ck-color-button-default-hover-background: #27272a;
+  --ck-color-button-default-active-background: #18181b;
+  --ck-color-button-on-background: #27272a;
+  --ck-color-button-on-hover-background: #3f3f46;
+  --ck-color-list-background: #18181b;
+  --ck-color-panel-background: #18181b;
+  --ck-color-panel-border: #27272a;
+}
+
+.dark .ck.ck-editor__main > .ck-editor__editable {
+  background-color: #09090b !important;
+  color: #f4f4f5 !important;
+  border-color: #27272a !important;
+}
+
+.dark .ck.ck-toolbar {
+  background-color: #18181b !important;
+  border-color: #27272a !important;
+}
+
+.dark .ck.ck-button {
+  color: #a1a1aa !important;
+}
+
+.dark .ck.ck-button:hover {
+  background-color: #27272a !important;
+  color: #f4f4f5 !important;
+}
+
+.dark .ck.ck-button.ck-on {
+  background-color: #27272a !important;
+  color: #ffffff !important;
+}
+
+.dark .ck.ck-dropdown__panel {
+  background-color: #18181b !important;
+  border-color: #27272a !important;
+}
+
+.dark .ck.ck-list__item .ck-button {
+  background-color: transparent !important;
+  color: #f4f4f5 !important;
+}
+
+.dark .ck.ck-list__item .ck-button:hover {
+  background-color: #27272a !important;
+}
+
+.ck.ck-editor__main > .ck-editor__editable_focused:not(.ck-editor__nested-editable) {
+  border-color: #27272a !important;
+  box-shadow: none !important;
+}
