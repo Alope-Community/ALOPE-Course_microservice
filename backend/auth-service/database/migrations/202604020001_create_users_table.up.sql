@@ -1,12 +1,16 @@
 CREATE TABLE IF NOT EXISTS users (
     id BIGSERIAL PRIMARY KEY,
-    username VARCHAR(50) UNIQUE NOT NULL,
+    google_id VARCHAR(255) UNIQUE,
+    provider VARCHAR(20) NOT NULL DEFAULT 'local',
+    username VARCHAR(50) UNIQUE,
+    name VARCHAR(255),
     email VARCHAR(100) UNIQUE NOT NULL,
-    password_hash TEXT NOT NULL, 
-    role VARCHAR(20) DEFAULT 'user',
+    password_hash TEXT NULL,
+    avatar TEXT,
+    role VARCHAR(20) NOT NULL DEFAULT 'user',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP WITH TIME ZONE 
+    deleted_at TIMESTAMP WITH TIME ZONE
 );
 
 CREATE INDEX idx_users_email ON users(email);

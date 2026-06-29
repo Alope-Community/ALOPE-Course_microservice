@@ -1,19 +1,20 @@
 package routes
 
 import (
-	"alope-course/auth-service/internal/handlers"
+	"alope-course/auth-service/internal/bootstrap"
 
 	"github.com/gin-gonic/gin"
 )
 
 func SetupRouter() *gin.Engine {
 	r := gin.Default()
-
-	r.GET("/api/users", handlers.GetAllUsers)
+	app := bootstrap.InjectApp()
 
 	auth := r.Group("/api/auth")
 	{
-		auth.POST("/login", handlers.Login)
+		auth.GET("/google", app.AuthHandler.GoogleLogin)
+		auth.GET("/google/callback", app.AuthHandler.GoogleCallback)
+		auth.POST("/logout", app.AuthHandler.Logout)
 	}
 
 	return r

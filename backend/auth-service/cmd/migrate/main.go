@@ -27,7 +27,7 @@ func main() {
 	pass := os.Getenv("DB_PASSWORD")
 	host := os.Getenv("DB_HOST")
 	port := os.Getenv("DB_PORT")
-	name := os.Getenv("DB_NAME")
+	name := os.Getenv("DB_DATABASE")
 	ssl := os.Getenv("DB_SSLMODE")
 
 	dbURL := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s",

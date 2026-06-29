@@ -14,10 +14,13 @@ func SeedUsers(db *gorm.DB) error {
 		return err
 	}
 
+	password := string(hashedPassword)
+	username := "admin"
+
 	admin := model.User{
-		Username:     "admin",
+		Username:     &username,
 		Email:        "admin@alope.com",
-		PasswordHash: string(hashedPassword),
+		PasswordHash: &password,
 		Role:         "admin",
 	}
 
