@@ -18,12 +18,14 @@ type ModuleService interface {
 }
 
 type moduleService struct {
-	repo repositories.ModuleRepository
+	courseRepo repositories.CourseRepository
+	repo       repositories.ModuleRepository
 }
 
-func NewModuleService(repo repositories.ModuleRepository) ModuleService {
+func NewModuleService(repo repositories.ModuleRepository, courseRepo repositories.CourseRepository) ModuleService {
 	return &moduleService{
-		repo: repo,
+		repo:       repo,
+		courseRepo: courseRepo,
 	}
 }
 
@@ -65,7 +67,7 @@ func (s *moduleService) CreateModule(req *models.CreateModuleRequest) (models.Mo
 	}
 
 	// Validasi course ada (menggunakan fungsi global repositories)
-	_, err := repositories.GetCourseByID(req.CourseID)
+	_, err := s.courseRepo.GetCourseByID(req.CourseID)
 	if err != nil {
 		return models.Module{}, errors.New("course tidak ditemukan")
 	}
@@ -79,7 +81,14 @@ func (s *moduleService) CreateModule(req *models.CreateModuleRequest) (models.Mo
 		Body:        req.Body,
 	}
 
-	return s.repo.CreateModule(&module)
+	createdModule, err := s.repo.CreateModule(&module)
+	if err != nil {
+		return models.Module{}, err
+	}
+
+	SendModuleDiscordNotification(createdModule)
+
+	return createdModule, nil
 }
 
 func (s *moduleService) UpdateModule(id uint, req *models.UpdateModuleRequest) (*models.Module, error) {
@@ -95,7 +104,7 @@ func (s *moduleService) UpdateModule(id uint, req *models.UpdateModuleRequest) (
 
 	// Validasi course jika di-update
 	if req.CourseID != 0 {
-		_, err := repositories.GetCourseByID(req.CourseID)
+		_, err := s.courseRepo.GetCourseByID(req.CourseID)
 		if err != nil {
 			return nil, errors.New("course tidak ditemukan")
 		}

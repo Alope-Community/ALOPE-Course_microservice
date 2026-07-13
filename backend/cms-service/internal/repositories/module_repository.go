@@ -25,14 +25,12 @@ type ModuleRepository interface {
 type moduleRepository struct {
 	db  *gorm.DB
 	rdb *redis.Client
-	ctx context.Context
 }
 
-func NewModuleRepository(db *gorm.DB, rdb *redis.Client, ctx context.Context) ModuleRepository {
+func NewModuleRepository(db *gorm.DB, rdb *redis.Client) ModuleRepository {
 	return &moduleRepository{
 		db:  db,
 		rdb: rdb,
-		ctx: ctx,
 	}
 }
 
@@ -47,7 +45,7 @@ const (
 func (r *moduleRepository) GetModules() ([]models.Module, error) {
 	var modules []models.Module
 
-	found, isNull := helpers.GetCache(r.ctx, r.rdb, allModulesCacheKey, &modules)
+	found, isNull := helpers.GetCache(context.Background(), r.rdb, allModulesCacheKey, &modules)
 
 	if found {
 		if isNull {
@@ -62,12 +60,12 @@ func (r *moduleRepository) GetModules() ([]models.Module, error) {
 	}
 
 	if len(modules) == 0 {
-		r.rdb.Set(r.ctx, allModulesCacheKey, "null", helpers.NullCacheTTL)
+		r.rdb.Set(context.Background(), allModulesCacheKey, "null", helpers.NullCacheTTL)
 		return modules, nil
 	}
 
 	data, _ := json.Marshal(modules)
-	r.rdb.Set(r.ctx, allModulesCacheKey, data, moduleCacheTTL)
+	r.rdb.Set(context.Background(), allModulesCacheKey, data, moduleCacheTTL)
 
 	return modules, nil
 }
@@ -76,7 +74,7 @@ func (r *moduleRepository) GetModuleByID(id uint) (*models.Module, error) {
 	cacheKey := fmt.Sprintf(moduleByIDCacheKey, id)
 	var module models.Module
 
-	found, isNull := helpers.GetCache(r.ctx, r.rdb, cacheKey, &module)
+	found, isNull := helpers.GetCache(context.Background(), r.rdb, cacheKey, &module)
 
 	if found {
 		if isNull {
@@ -87,12 +85,12 @@ func (r *moduleRepository) GetModuleByID(id uint) (*models.Module, error) {
 	}
 
 	if err := r.db.Preload("Course").Preload("Course.Category").First(&module, id).Error; err != nil {
-		r.rdb.Set(r.ctx, cacheKey, "null", helpers.NullCacheTTL)
+		r.rdb.Set(context.Background(), cacheKey, "null", helpers.NullCacheTTL)
 		return nil, err
 	}
 
 	data, _ := json.Marshal(module)
-	r.rdb.Set(r.ctx, cacheKey, data, moduleCacheTTL)
+	r.rdb.Set(context.Background(), cacheKey, data, moduleCacheTTL)
 
 	return &module, nil
 }
@@ -101,7 +99,7 @@ func (r *moduleRepository) GetModuleBySlug(slug string) (*models.Module, error) 
 	cacheKey := fmt.Sprintf(moduleBySlugCacheKey, slug)
 	var module models.Module
 
-	found, isNull := helpers.GetCache(r.ctx, r.rdb, cacheKey, &module)
+	found, isNull := helpers.GetCache(context.Background(), r.rdb, cacheKey, &module)
 
 	if found {
 		if isNull {
@@ -112,12 +110,12 @@ func (r *moduleRepository) GetModuleBySlug(slug string) (*models.Module, error) 
 	}
 
 	if err := r.db.Preload("Course").Preload("Course.Category").Where("slug = ?", slug).First(&module).Error; err != nil {
-		r.rdb.Set(r.ctx, cacheKey, "null", helpers.NullCacheTTL)
+		r.rdb.Set(context.Background(), cacheKey, "null", helpers.NullCacheTTL)
 		return nil, err
 	}
 
 	data, _ := json.Marshal(module)
-	r.rdb.Set(r.ctx, cacheKey, data, moduleCacheTTL)
+	r.rdb.Set(context.Background(), cacheKey, data, moduleCacheTTL)
 
 	return &module, nil
 }
@@ -126,7 +124,7 @@ func (r *moduleRepository) GetModulesByCourse(courseID uint) ([]models.Module, e
 	cacheKey := fmt.Sprintf(modulesByCourseCacheKey, courseID)
 	var modules []models.Module
 
-	found, isNull := helpers.GetCache(r.ctx, r.rdb, cacheKey, &modules)
+	found, isNull := helpers.GetCache(context.Background(), r.rdb, cacheKey, &modules)
 
 	if found {
 		if isNull {
@@ -141,12 +139,12 @@ func (r *moduleRepository) GetModulesByCourse(courseID uint) ([]models.Module, e
 	}
 
 	if len(modules) == 0 {
-		r.rdb.Set(r.ctx, cacheKey, "null", helpers.NullCacheTTL)
+		r.rdb.Set(context.Background(), cacheKey, "null", helpers.NullCacheTTL)
 		return modules, nil
 	}
 
 	data, _ := json.Marshal(modules)
-	r.rdb.Set(r.ctx, cacheKey, data, moduleCacheTTL)
+	r.rdb.Set(context.Background(), cacheKey, data, moduleCacheTTL)
 
 	return modules, nil
 }
@@ -168,11 +166,11 @@ func (r *moduleRepository) CreateModule(module *models.Module) (models.Module, e
 	data, _ := json.Marshal(createdModule)
 
 	pipe := r.rdb.TxPipeline()
-	pipe.Set(r.ctx, cacheKeyID, data, moduleCacheTTL)
-	pipe.Set(r.ctx, cacheKeySlug, data, moduleCacheTTL)
-	pipe.Del(r.ctx, allModulesCacheKey)
-	pipe.Del(r.ctx, cacheKeyCourse)
-	_, _ = pipe.Exec(r.ctx)
+	pipe.Set(context.Background(), cacheKeyID, data, moduleCacheTTL)
+	pipe.Set(context.Background(), cacheKeySlug, data, moduleCacheTTL)
+	pipe.Del(context.Background(), allModulesCacheKey)
+	pipe.Del(context.Background(), cacheKeyCourse)
+	_, _ = pipe.Exec(context.Background())
 
 	return *createdModule, nil
 }
@@ -207,16 +205,16 @@ func (r *moduleRepository) UpdateModule(id uint, module *models.Module) (*models
 
 	pipe := r.rdb.TxPipeline()
 	if oldKeySlug != cacheKeySlug {
-		pipe.Del(r.ctx, oldKeySlug)
+		pipe.Del(context.Background(), oldKeySlug)
 	}
 	if oldKeyCourse != cacheKeyCourse {
-		pipe.Del(r.ctx, oldKeyCourse)
+		pipe.Del(context.Background(), oldKeyCourse)
 	}
-	pipe.Del(r.ctx, cacheKeyID)
-	pipe.Del(r.ctx, allModulesCacheKey)
-	pipe.Del(r.ctx, cacheKeySlug)
-	pipe.Del(r.ctx, cacheKeyCourse)
-	_, _ = pipe.Exec(r.ctx)
+	pipe.Del(context.Background(), cacheKeyID)
+	pipe.Del(context.Background(), allModulesCacheKey)
+	pipe.Del(context.Background(), cacheKeySlug)
+	pipe.Del(context.Background(), cacheKeyCourse)
+	_, _ = pipe.Exec(context.Background())
 
 	updatedModule, err := r.GetModuleByID(id)
 
@@ -243,11 +241,11 @@ func (r *moduleRepository) DeleteModule(id uint) error {
 	cacheKeyCourse := fmt.Sprintf(modulesByCourseCacheKey, module.CourseID)
 
 	pipe := r.rdb.TxPipeline()
-	pipe.Del(r.ctx, cacheKeyID)
-	pipe.Del(r.ctx, allModulesCacheKey)
-	pipe.Del(r.ctx, cacheKeySlug)
-	pipe.Del(r.ctx, cacheKeyCourse)
-	_, _ = pipe.Exec(r.ctx)
+	pipe.Del(context.Background(), cacheKeyID)
+	pipe.Del(context.Background(), allModulesCacheKey)
+	pipe.Del(context.Background(), cacheKeySlug)
+	pipe.Del(context.Background(), cacheKeyCourse)
+	_, _ = pipe.Exec(context.Background())
 
 	return nil
 }

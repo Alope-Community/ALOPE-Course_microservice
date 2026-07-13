@@ -8,11 +8,24 @@ services:
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=alope-course
+      - POSTGRES_DB=alope_db
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 5s
       timeout: 5s
+      retries: 5
+
+  # CACHE
+  redis:
+    image: redis:alpine
+    container_name: alope_redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
       retries: 5
 
   # Backend: Auth Service
@@ -27,7 +40,7 @@ services:
         condition: service_healthy
     environment:
       - PORT=8081
-      - DB_HOST=alope-db
+      - DB_HOST=alope_db
       - DB_PORT=5432
       - DB_USER=postgres
       - DB_PASSWORD=postgres
@@ -37,7 +50,7 @@ services:
   course-service:
     build: ./backend/course-service
     ports:
-      - "8080:8080"
+      - "8083:8080"
     depends_on:
       alope-db:
         condition: service_healthy
@@ -65,9 +78,26 @@ services:
       - DB_HOST=alope-db
       - DB_USER=postgres
       - DB_PASSWORD=postgres
-      - DB_NAME=alope-course
+      - DB_DATABASE=alope_db
       - DB_PORT=5432
       - DB_SSLMODE=disable
+      - DB_URL=postgres://postgres:postgres@alope-db:5432/alope_db?sslmode=disable
+
+  # API Gateway
+  gateway:
+    build: ./backend/gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      - auth-service
+      - course-service
+      - cms-service
+    environment:
+      - GATEWAY_PORT=8080
+      - AUTH_SERVICE_URL=http://auth-service:8081
+      - COURSE_SERVICE_URL=http://course-service:8080
+      - CMS_SERVICE_URL=http://cms-service:8082
+      - JWT_SECRET=732a2d8ad20e6bb94f9ce7c87bcc830d6bdb2feb328914506b8398eb7a5a604a
 
   # Frontend: Alope Course (Next.js)
   alope-course:
@@ -75,7 +105,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:8080/api/v1
+      - NEXT_PUBLIC_API_URL=http://localhost:8080/api
 
   # Frontend: Alope Admin
   alope-admin:

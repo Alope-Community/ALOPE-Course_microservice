@@ -10,6 +10,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type CourseHandler struct {
+	service services.CourseService
+}
+
+func NewCourseHandler(service services.CourseService) *CourseHandler {
+	return &CourseHandler{
+		service: service,
+	}
+}
+
 // GetAllCourses godoc
 // @Summary      Get all courses
 // @Description  Get all courses list
@@ -18,8 +28,8 @@ import (
 // @Success 200 {object} models.CourseListResponse
 // @Failure 500 {object} models.CourseErrorResponse
 // @Router       /courses [get]
-func GetAllCourses(c *gin.Context) {
-	courses, err := services.GetAllCourses()
+func (s *CourseHandler) GetAllCourses(c *gin.Context) {
+	courses, err := s.service.GetAllCourses()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"status":  "error",
@@ -47,7 +57,7 @@ func GetAllCourses(c *gin.Context) {
 // @Success 200 {object} models.CourseResponse
 // @Failure 500 {object} models.CourseErrorResponse
 // @Router       /courses/{id} [get]
-func GetCourseByID(c *gin.Context) {
+func (s *CourseHandler) GetCourseByID(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -59,7 +69,7 @@ func GetCourseByID(c *gin.Context) {
 		return
 	}
 
-	course, err := services.GetCourseByID(uint(id))
+	course, err := s.service.GetCourseByID(uint(id))
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			"status":  "error",
@@ -87,7 +97,7 @@ func GetCourseByID(c *gin.Context) {
 // @Success 200 {object} models.CourseResponse
 // @Failure 500 {object} models.CourseErrorResponse
 // @Router       /courses/slug/{slug} [get]
-func GetCourseBySlug(c *gin.Context) {
+func (s *CourseHandler) GetCourseBySlug(c *gin.Context) {
 	slug := c.Param("slug")
 	if slug == "" {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -98,7 +108,7 @@ func GetCourseBySlug(c *gin.Context) {
 		return
 	}
 
-	course, err := services.GetCourseBySlug(slug)
+	course, err := s.service.GetCourseBySlug(slug)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			"status":  "error",
@@ -127,7 +137,7 @@ func GetCourseBySlug(c *gin.Context) {
 // @Success 201 {object} models.CourseResponse
 // @Failure 500 {object} models.CourseErrorResponse
 // @Router       /courses [post]
-func CreateCourse(c *gin.Context) {
+func (s *CourseHandler) CreateCourse(c *gin.Context) {
 	var req models.CreateCourseRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -140,7 +150,7 @@ func CreateCourse(c *gin.Context) {
 		return
 	}
 
-	course, err := services.CreateCourse(&req)
+	course, err := s.service.CreateCourse(&req)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"status":  "error",
@@ -170,7 +180,7 @@ func CreateCourse(c *gin.Context) {
 // @Success 200 {object} models.CourseResponse
 // @Failure 500 {object} models.CourseErrorResponse
 // @Router       /courses/{id} [put]
-func UpdateCourse(c *gin.Context) {
+func (s *CourseHandler) UpdateCourse(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -193,7 +203,7 @@ func UpdateCourse(c *gin.Context) {
 		return
 	}
 
-	course, err := services.UpdateCourse(uint(id), &req)
+	course, err := s.service.UpdateCourse(uint(id), &req)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"status":  "error",
@@ -221,7 +231,7 @@ func UpdateCourse(c *gin.Context) {
 // @Success 200 {object} models.CourseResponse
 // @Failure 500 {object} models.CourseErrorResponse
 // @Router       /courses/{id} [delete]
-func DeleteCourse(c *gin.Context) {
+func (s *CourseHandler) DeleteCourse(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -233,7 +243,7 @@ func DeleteCourse(c *gin.Context) {
 		return
 	}
 
-	err = services.DeleteCourse(uint(id))
+	err = s.service.DeleteCourse(uint(id))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"status":  "error",
@@ -260,7 +270,7 @@ func DeleteCourse(c *gin.Context) {
 // @Success 200 {object} models.CourseListResponse
 // @Failure 500 {object} models.CourseErrorResponse
 // @Router       /courses/category/{id} [get]
-func GetCoursesByCategory(c *gin.Context) {
+func (s *CourseHandler) GetCoursesByCategory(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -272,7 +282,7 @@ func GetCoursesByCategory(c *gin.Context) {
 		return
 	}
 
-	courses, err := services.GetCoursesByCategory(uint(id))
+	courses, err := s.service.GetCoursesByCategory(uint(id))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"status":  "error",
@@ -300,7 +310,7 @@ func GetCoursesByCategory(c *gin.Context) {
 // @Success 200 {object} models.CourseListResponse
 // @Failure 500 {object} models.CourseErrorResponse
 // @Router       /courses/status/{status} [get]
-func GetCoursesByStatus(c *gin.Context) {
+func (s *CourseHandler) GetCoursesByStatus(c *gin.Context) {
 	status := c.Param("status")
 	if status == "" {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -311,7 +321,7 @@ func GetCoursesByStatus(c *gin.Context) {
 		return
 	}
 
-	courses, err := services.GetCoursesByStatus(status)
+	courses, err := s.service.GetCoursesByStatus(status)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"status":  "error",

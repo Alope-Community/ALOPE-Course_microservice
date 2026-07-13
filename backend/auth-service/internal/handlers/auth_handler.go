@@ -56,6 +56,49 @@ func (h *AuthHandler) GoogleCallback(c *gin.Context) {
 	})
 }
 
+func (h *AuthHandler) Verify(c *gin.Context) {
+	authHeader := c.GetHeader("Authorization")
+	if authHeader == "" {
+		c.JSON(http.StatusUnauthorized, models.Response[string]{
+			Message: "Missing authorization header.",
+			Status:  "error",
+			Code:    "ALP-004",
+		})
+		return
+	}
+
+	tokenString := strings.TrimPrefix(authHeader, "Bearer ")
+	if tokenString == authHeader {
+		c.JSON(http.StatusUnauthorized, models.Response[string]{
+			Message: "Invalid authorization format.",
+			Status:  "error",
+			Code:    "ALP-004",
+		})
+		return
+	}
+
+	claims, err := h.authService.VerifyAccessToken(tokenString)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, models.Response[string]{
+			Message: "Invalid or revoked token.",
+			Status:  "error",
+			Code:    "ALP-004",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"status":  "success",
+		"message": "Token is valid.",
+		"code":    "ALP-006",
+		"data": gin.H{
+			"user_id": claims["user_id"],
+			"email":   claims["email"],
+			"role":    claims["role"],
+		},
+	})
+}
+
 func (h *AuthHandler) Logout(c *gin.Context) {
 	authHeader := c.GetHeader("Authorization")
 	if authHeader == "" {

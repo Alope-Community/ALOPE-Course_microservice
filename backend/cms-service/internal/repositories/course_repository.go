@@ -1,15 +1,36 @@
 package repositories
 
 import (
-	"alope-course/cms-service/internal/config"
 	"alope-course/cms-service/internal/models"
+
+	"gorm.io/gorm"
 )
 
-func GetAllCourses() ([]models.Course, error) {
-	db := config.DB
+type CourseRepository interface {
+	GetAllCourses() ([]models.Course, error)
+	GetCourseByID(id uint) (*models.Course, error)
+	GetCourseBySlug(slug string) (models.Course, error)
+	CreateCourse(course *models.Course) (models.Course, error)
+	UpdateCourse(id uint, course *models.Course) (*models.Course, error)
+	DeleteCourse(id uint) error
+	GetCoursesByCategory(categoryID uint) ([]models.Course, error)
+	GetCoursesByStatus(status string) ([]models.Course, error)
+}
+
+type courseRepository struct {
+	db *gorm.DB
+}
+
+func NewCourseRepository(db *gorm.DB) CourseRepository {
+	return &courseRepository{
+		db: db,
+	}
+}
+
+func (r *courseRepository) GetAllCourses() ([]models.Course, error) {
 	var courses []models.Course
 
-	err := db.
+	err := r.db.
 		Preload("Category").
 		Order("id DESC").
 		Find(&courses).Error
@@ -21,11 +42,13 @@ func GetAllCourses() ([]models.Course, error) {
 	return courses, nil
 }
 
-func GetCourseByID(id uint) (*models.Course, error) {
-	db := config.DB
+func (r *courseRepository) GetCourseByID(id uint) (*models.Course, error) {
 	var course models.Course
 
-	err := db.Preload("Category").First(&course, id).Error
+	err := r.db.
+		Preload("Category").
+		First(&course, id).Error
+
 	if err != nil {
 		return &models.Course{}, err
 	}
@@ -33,11 +56,13 @@ func GetCourseByID(id uint) (*models.Course, error) {
 	return &course, nil
 }
 
-func GetCourseBySlug(slug string) (models.Course, error) {
-	db := config.DB
+func (r *courseRepository) GetCourseBySlug(slug string) (models.Course, error) {
 	var course models.Course
 
-	err := db.Where("slug = ?", slug).First(&course).Error
+	err := r.db.
+		Where("slug = ?", slug).
+		First(&course).Error
+
 	if err != nil {
 		return models.Course{}, err
 	}
@@ -45,50 +70,47 @@ func GetCourseBySlug(slug string) (models.Course, error) {
 	return course, nil
 }
 
-func CreateCourse(course *models.Course) (models.Course, error) {
-	db := config.DB
-
-	err := db.Create(&course).Error
+func (r *courseRepository) CreateCourse(course *models.Course) (models.Course, error) {
+	err := r.db.Create(course).Error
 	if err != nil {
 		return models.Course{}, err
 	}
 
-	return *course, nil
+	createdCourse, err := r.GetCourseByID(course.ID)
+
+	if err != nil {
+		return models.Course{}, err
+	}
+
+	return *createdCourse, nil
 }
 
-func UpdateCourse(id uint, course *models.Course) (*models.Course, error) {
-	db := config.DB
+func (r *courseRepository) UpdateCourse(id uint, course *models.Course) (*models.Course, error) {
+	err := r.db.
+		Model(&models.Course{}).
+		Where("id = ?", id).
+		Updates(course).Error
 
-	err := db.Model(&models.Course{}).Where("id = ?", id).Updates(course).Error
 	if err != nil {
 		return &models.Course{}, err
 	}
 
 	// Ambil data terbaru
-	updatedCourse, err := GetCourseByID(id)
-	if err != nil {
-		return &models.Course{}, err
-	}
-
-	return updatedCourse, nil
+	return r.GetCourseByID(id)
 }
 
-func DeleteCourse(id uint) error {
-	db := config.DB
-
-	err := db.Delete(&models.Course{}, id).Error
-	if err != nil {
-		return err
-	}
-
-	return nil
+func (r *courseRepository) DeleteCourse(id uint) error {
+	return r.db.Delete(&models.Course{}, id).Error
 }
 
-func GetCoursesByCategory(categoryID uint) ([]models.Course, error) {
-	db := config.DB
+func (r *courseRepository) GetCoursesByCategory(categoryID uint) ([]models.Course, error) {
 	var courses []models.Course
 
-	err := db.Where("category_id = ?", categoryID).Order("id DESC").Find(&courses).Error
+	err := r.db.
+		Where("category_id = ?", categoryID).
+		Order("id DESC").
+		Find(&courses).Error
+
 	if err != nil {
 		return nil, err
 	}
@@ -96,11 +118,14 @@ func GetCoursesByCategory(categoryID uint) ([]models.Course, error) {
 	return courses, nil
 }
 
-func GetCoursesByStatus(status string) ([]models.Course, error) {
-	db := config.DB
+func (r *courseRepository) GetCoursesByStatus(status string) ([]models.Course, error) {
 	var courses []models.Course
 
-	err := db.Where("status = ?", status).Order("id DESC").Find(&courses).Error
+	err := r.db.
+		Where("status = ?", status).
+		Order("id DESC").
+		Find(&courses).Error
+
 	if err != nil {
 		return nil, err
 	}

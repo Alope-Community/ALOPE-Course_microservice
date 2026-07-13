@@ -9,12 +9,14 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/golang-jwt/jwt/v5"
 	"gorm.io/gorm"
 )
 
 type AuthService interface {
 	GoogleLogin(ctx context.Context, code string) (*models.GoogleLogin, error)
 	Logout(jti string, expiresAt time.Time) error
+	VerifyAccessToken(tokenString string) (jwt.MapClaims, error)
 }
 
 type authService struct {
@@ -93,4 +95,26 @@ func (g *authService) GoogleLogin(ctx context.Context, code string) (*models.Goo
 func (s *authService) Logout(jti string, expiresAt time.Time) error {
 	_ = s.tokenBlacklistRepository.DeleteExpired()
 	return s.tokenBlacklistRepository.Create(jti, expiresAt)
+}
+
+func (s *authService) VerifyAccessToken(tokenString string) (jwt.MapClaims, error) {
+	claims, err := utils.VerifyToken(tokenString)
+	if err != nil {
+		return nil, err
+	}
+
+	jti, ok := claims["jti"].(string)
+	if !ok {
+		return nil, fmt.Errorf("invalid token claims")
+	}
+
+	blacklisted, err := s.tokenBlacklistRepository.Exists(jti)
+	if err != nil {
+		return nil, err
+	}
+	if blacklisted {
+		return nil, fmt.Errorf("token has been revoked")
+	}
+
+	return claims, nil
 }

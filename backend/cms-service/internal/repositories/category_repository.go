@@ -22,14 +22,12 @@ type CategoryRepository interface {
 type categoryRepository struct {
 	db  *gorm.DB
 	rdb *redis.Client
-	ctx context.Context
 }
 
-func NewCategoryRepository(db *gorm.DB, rdb *redis.Client, ctx context.Context) CategoryRepository {
+func NewCategoryRepository(db *gorm.DB, rdb *redis.Client) CategoryRepository {
 	return &categoryRepository{
 		db:  db,
 		rdb: rdb,
-		ctx: ctx,
 	}
 }
 
@@ -41,7 +39,7 @@ func (r *categoryRepository) GetCategories() ([]models.Category, error) {
 
 	var categories []models.Category
 
-	cacheFound := helpers.GetCacheSimple(r.ctx, r.rdb, allCategoriesCacheKey, &categories)
+	cacheFound := helpers.GetCacheSimple(context.Background(), r.rdb, allCategoriesCacheKey, &categories)
 
 	if cacheFound {
 		return categories, nil
@@ -57,7 +55,7 @@ func (r *categoryRepository) GetCategories() ([]models.Category, error) {
 
 	data, _ := json.Marshal(categories)
 
-	r.rdb.Set(r.ctx, allCategoriesCacheKey, data, helpers.MaxCacheTTL)
+	r.rdb.Set(context.Background(), allCategoriesCacheKey, data, helpers.MaxCacheTTL)
 
 	return categories, nil
 
@@ -68,7 +66,7 @@ func (r *categoryRepository) GetCategoryByID(id uint) (*models.Category, error) 
 	var category models.Category
 	var categories []models.Category
 
-	cacheFound := helpers.GetCacheSimple(r.ctx, r.rdb, allCategoriesCacheKey, &categories)
+	cacheFound := helpers.GetCacheSimple(context.Background(), r.rdb, allCategoriesCacheKey, &categories)
 
 	if cacheFound {
 		for i := 0; i < len(categories); i++ {
@@ -89,7 +87,7 @@ func (r *categoryRepository) GetCategoryBySlug(slug string) (*models.Category, e
 	var category models.Category
 	var categories []models.Category
 
-	cacheFound := helpers.GetCacheSimple(r.ctx, r.rdb, allCategoriesCacheKey, &categories)
+	cacheFound := helpers.GetCacheSimple(context.Background(), r.rdb, allCategoriesCacheKey, &categories)
 
 	if cacheFound {
 		for i := 0; i < len(categories); i++ {
@@ -114,7 +112,7 @@ func (r *categoryRepository) CreateCategory(category *models.Category) (models.C
 		return *category, err
 	}
 
-	r.rdb.Del(r.ctx, allCategoriesCacheKey)
+	r.rdb.Del(context.Background(), allCategoriesCacheKey)
 
 	return *category, nil
 }
@@ -131,7 +129,7 @@ func (r *categoryRepository) UpdateCategory(id uint, category *models.Category) 
 		return nil, err
 	}
 
-	r.rdb.Del(r.ctx, allCategoriesCacheKey)
+	r.rdb.Del(context.Background(), allCategoriesCacheKey)
 
 	updatedCategory, err := r.GetCategoryByID(id)
 
@@ -155,7 +153,7 @@ func (r *categoryRepository) DeleteCategory(id uint) error {
 		return err
 	}
 
-	r.rdb.Del(r.ctx, allCategoriesCacheKey)
+	r.rdb.Del(context.Background(), allCategoriesCacheKey)
 
 	return nil
 }

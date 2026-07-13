@@ -74,3 +74,36 @@ func GetCourseByIDHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, res)
 }
+
+// GetCourseBySlug godoc
+// @Summary      Get course by slug
+// @Description  Get course by slug
+// @Tags         courses
+// @Produce      json
+// @Param        slug path string true "Course Slug"
+// @Success      200 {object} models.CourseResponse
+// @Failure		 500 {object} models.CourseErrorResponse
+// @Router       /courses/slug/{slug} [get]
+func GetCourseBySlugHandler(c *gin.Context) {
+	course, err := services.GetCourseBySlugService(c.Param("slug"))
+
+	if err != nil {
+		res := models.Response[string]{
+			Status:  "error",
+			Code:    "ALP-290",
+			Message: "Gagal mengambil data kursus berdasarkan slug.",
+			Data:    err.Error(),
+		}
+		c.JSON(http.StatusInternalServerError, res)
+		return
+	}
+
+	res := models.Response[models.Course]{
+		Status:  "success",
+		Code:    "ALP-355",
+		Message: "Berhasil mengambil data kursus berdasarkan slug.",
+		Data:    course,
+	}
+
+	c.JSON(http.StatusOK, res)
+}

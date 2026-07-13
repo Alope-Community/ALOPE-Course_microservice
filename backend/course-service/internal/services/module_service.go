@@ -24,3 +24,13 @@ func GetModuleByIDService(id string) (models.Module, error) {
 
 	return module, nil
 }
+
+func GetModuleBySlugService(slug string) (models.Module, error) {
+	module, err := repositories.GetModuleBySlugRepository(slug)
+
+	if err != nil {
+		return module, err
+	}
+
+	return module, nil
+}

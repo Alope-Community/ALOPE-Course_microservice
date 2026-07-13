@@ -15,9 +15,11 @@ func SetupRouter() *gin.Engine {
 	api := r.Group("/api")
 	{
 		api.GET("/courses", handlers.GetCourseHandler)
+		api.GET("/courses/slug/:slug", handlers.GetCourseBySlugHandler)
 		api.GET("courses/:id", handlers.GetCourseByIDHandler)
 
 		api.GET("/modules", handlers.GetModuleHandler)
+		api.GET("/modules/slug/:slug", handlers.GetModuleBySlugHandler)
 		api.GET("/modules/:id", handlers.GetModuleByIDHandler)
 
 		api.GET("/testimonials", app.TestimonialHandler.GetTestimonialsHandler)

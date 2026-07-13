@@ -39,3 +39,21 @@ func GetModuleByIDRepository(id string) (models.Module, error) {
 
 	return module, nil
 }
+
+func GetModuleBySlugRepository(slug string) (models.Module, error) {
+	db := config.DB
+
+	var module models.Module
+
+	err := db.
+		Preload("Course").
+		Preload("Course.Category").
+		Where("slug = ?", slug).
+		First(&module).Error
+
+	if err != nil {
+		return module, err
+	}
+
+	return module, nil
+}
