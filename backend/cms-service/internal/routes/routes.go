@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"alope-course/cms-service/internal/bootstrap"
-	"alope-course/cms-service/internal/handlers"
 
 	"github.com/gin-gonic/gin"
 )
@@ -24,14 +23,14 @@ func SetupRouter() *gin.Engine {
 		// Courses endpoints (Global functions)
 		courses := api.Group("/courses")
 		{
-			courses.GET("", handlers.GetAllCourses)
-			courses.GET("/:id", handlers.GetCourseByID)
-			courses.GET("/slug/:slug", handlers.GetCourseBySlug)
-			courses.POST("", handlers.CreateCourse)
-			courses.PUT("/:id", handlers.UpdateCourse)
-			courses.DELETE("/:id", handlers.DeleteCourse)
-			courses.GET("/category/:id", handlers.GetCoursesByCategory)
-			courses.GET("/status/:status", handlers.GetCoursesByStatus)
+			courses.GET("", app.CourseHandler.GetAllCourses)
+			courses.GET("/:id", app.CourseHandler.GetCourseByID)
+			courses.GET("/slug/:slug", app.CourseHandler.GetCourseBySlug)
+			courses.POST("", app.CourseHandler.CreateCourse)
+			courses.PUT("/:id", app.CourseHandler.UpdateCourse)
+			courses.DELETE("/:id", app.CourseHandler.DeleteCourse)
+			courses.GET("/category/:id", app.CourseHandler.GetCoursesByCategory)
+			courses.GET("/status/:status", app.CourseHandler.GetCoursesByStatus)
 		}
 
 		// Categories endpoints

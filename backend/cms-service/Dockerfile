@@ -1,11 +1,8 @@
-FROM golang:1.24-alpine
+FROM golang:1.25-alpine
 
-RUN apk add --no-cache git build-base
+RUN apk add --no-cache git build-base postgresql-client
 
 WORKDIR /app
-
-ENV GOTOOLCHAIN=go1.25.0+auto
-ENV GOMODCACHE=/go/pkg/mod
 
 COPY go.mod go.sum ./
 
@@ -14,6 +11,10 @@ RUN go mod download
 COPY . .
 
 RUN go build -o main ./cmd/main.go
+RUN go build -o migrate ./cmd/migrate/main.go
 
-EXPOSE 8080
-CMD ["./main"]
+RUN chmod +x docker-entrypoint.sh
+
+EXPOSE 8082
+
+ENTRYPOINT ["./docker-entrypoint.sh"]

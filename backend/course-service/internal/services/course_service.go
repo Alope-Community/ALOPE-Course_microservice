@@ -25,3 +25,13 @@ func GetCourseByIDService(id string) (models.Course, error) {
 
 	return course, nil
 }
+
+func GetCourseBySlugService(slug string) (models.Course, error) {
+	course, err := repositories.GetCourseBySlugRepository(slug)
+
+	if err != nil {
+		return course, err
+	}
+
+	return course, nil
+}

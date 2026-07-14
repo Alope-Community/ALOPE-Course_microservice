@@ -33,6 +33,10 @@ func main() {
 
 	config.ConnectDB()
 
+	if err := config.InitGoogleOAuth(); err != nil {
+		log.Fatal(err)
+	}
+
 	r := routes.SetupRouter()
 
 	// Route Swagger

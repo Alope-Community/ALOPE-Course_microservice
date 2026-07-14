@@ -76,3 +76,36 @@ func GetModuleByIDHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, res)
 }
+
+// GetModuleBySlug godoc
+// @Summary      Get module by slug
+// @Description  Get module by slug
+// @Tags         modules
+// @Produce      json
+// @Param        slug path string true "Module Slug"
+// @Success      200 {object} models.ModuleResponse
+// @Failure		 500 {object} models.ModuleErrorResponse
+// @Router       /modules/slug/{slug} [get]
+func GetModuleBySlugHandler(c *gin.Context) {
+	module, err := services.GetModuleBySlugService(c.Param("slug"))
+
+	if err != nil {
+		res := models.Response[string]{
+			Status:  "error",
+			Code:    "ALP-994",
+			Message: "Gagal mengambil data modul berdasarkan slug.",
+			Data:    err.Error(),
+		}
+		c.JSON(http.StatusInternalServerError, res)
+		return
+	}
+
+	res := models.Response[models.Module]{
+		Status:  "success",
+		Code:    "ALP-296",
+		Message: "Berhasil mengambil data modul berdasarkan slug.",
+		Data:    module,
+	}
+
+	c.JSON(http.StatusOK, res)
+}
