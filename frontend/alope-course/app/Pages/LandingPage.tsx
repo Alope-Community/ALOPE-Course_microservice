@@ -229,7 +229,7 @@ export default function LandingPage() {
             </Head>
             <NavbarComponent />
             <header className="relative min-h-[800px] overflow-hidden bg-gradient-to-tr from-white to-yellow-50 pt-20 md:pt-16">
-                <div className="container relative z-10 mx-auto flex flex-col items-center justify-between px-4 py-10 text-center md:px-10 lg:px-14 lg:text-left xl:flex-row xl:px-20">
+                <div className="container relative z-10 mx-auto flex flex-col items-center justify-between px-4 py-10 text-center md:px-10 lg:px-14 lg:text-left xl:flex-row xl:px-20 gap-10">
                     <div className="order-2 flex w-full flex-col gap-10 px-3 text-center sm:w-3/4 sm:px-0 xl:order-1 xl:w-1/2 xl:text-left">
                         <h1 className="font-spartan text-[40px] font-medium leading-tight text-black md:text-5xl xl:text-6xl">
                             Tingkatkan Skill Coding dari Nol hingga Mahir!
@@ -249,13 +249,13 @@ export default function LandingPage() {
                             </Link>
                         </div>
                     </div>
-                    <div className="relative order-1 mt-10 hidden w-[70%] justify-center lg:mt-0 lg:flex xl:order-2 xl:w-1/2">
+                    <div className="relative order-1 md:w-[70%] justify-center lg:mt-0 flex xl:order-2 xl:w-1/2 w-[90%]">
                         <img
                             src="/images/header.png"
                             alt="Belajar coding"
-                            className="relative z-10 object-cover md:w-[70%] md:object-contain lg:object-cover xl:h-auto xl:w-[85%] xl:max-w-[600px] xl:object-contain"
+                            className="relative z-10 object-cover w-full md:w-[70%] md:object-contain lg:object-cover xl:h-auto xl:w-[85%] xl:max-w-[600px] xl:object-contain"
                         />
-                        <div className="absolute left-[10%] top-10 z-20 flex translate-x-6 items-center gap-2 rounded-xl bg-white px-3 py-1.5 shadow-lg">
+                        <div className="absolute left-[10%] top-32 z-20 hidden xl:flex translate-x-6 items-center gap-2 rounded-xl bg-white px-3 py-1.5 shadow-lg">
                             <div className="flex h-5 w-5 items-center justify-center rounded-md bg-yellow-400 text-white">
                                 <IconSend3 className="h-3 w-3" />
                             </div>
@@ -264,7 +264,7 @@ export default function LandingPage() {
                                 Effective Learning
                             </span>
                         </div>
-                        <div className="absolute bottom-20 left-[8%] z-20 flex translate-x-8 items-center gap-2 rounded-xl bg-white px-3 py-1.5 shadow-lg">
+                        <div className="absolute bottom-36 left-[8%] z-20 hidden xl:flex translate-x-8 items-center gap-2 rounded-xl bg-white px-3 py-1.5 shadow-lg">
                             <div className="flex h-5 w-5 items-center justify-center rounded-md bg-purple-600 text-white">
                                 <IconSend3 className="h-3 w-3" />
                             </div>
@@ -273,7 +273,7 @@ export default function LandingPage() {
                                 Upgrade Skill
                             </span>
                         </div>
-                        <div className="absolute bottom-12 right-6 z-20 flex items-center gap-2 rounded-xl bg-white px-3 py-1.5 shadow-lg">
+                        <div className="absolute bottom-20 right-6 z-20 hidden xl:flex items-center gap-2 rounded-xl bg-white px-3 py-1.5 shadow-lg">
                             <div className="flex h-5 w-5 items-center justify-center rounded-md bg-primary text-white">
                                 <IconBookOpen className="h-3 w-3" />
                             </div>
